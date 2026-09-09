@@ -29,80 +29,93 @@
     </section>
     <div id="app-content">
     <header class="hero">
-        <nav class="nav">
-            <details class="nav-menu">
-                <summary>Günlükler <span aria-hidden="true">⌄</span></summary>
-                <div class="date-menu" id="date-menu">
-                    <a href="#intro">Günlüğe giriş</a>
-                    <p class="empty-date-menu">Henüz eklenmiş günlük yok.</p>
-                </div>
-            </details>
-            <a href="#yeni-yazi">Yeni Yazı</a>
-            <a href="#album-ekle">Yeni Fotoğraf</a>
-            <a href="#fotograflar">Albüm</a>
-            <a href="#sohbet">Mesaj</a>
-            <a href="#sarki">Şarkı</a>
-        </nav>
+        <button class="menu-toggle" type="button" aria-label="Menüyü aç" aria-expanded="false">☰</button>
+        <div class="side-menu-backdrop" data-menu-close></div>
+
+        <aside class="side-menu" id="side-menu" aria-label="Yan menü">
+            <div class="side-menu-header">
+                <span>Menü ₍^. .^₎Ⳋ</span>
+                <button class="menu-close" type="button" aria-label="Menüyü kapat">✕</button>
+            </div>
+            <p class="account-status" id="account-status" aria-live="polite"></p>
+
+            <nav class="nav" aria-label="Ana menü">
+                <details class="nav-menu">
+                    <summary>Tarihe Git<span aria-hidden="true">⌄</span></summary>
+                    <div class="date-menu" id="date-menu">
+                        <a href="#intro">Günlüğe giriş</a>
+                        <p class="empty-date-menu">Henüz eklenmiş günlük yok.</p>
+                    </div>
+                </details>
+                <button class="section-tab" type="button" data-tab="gunluk">Günlükler</button>
+                <button class="section-tab" type="button" data-tab="album">Albüm</button>
+                <button class="section-tab" type="button" data-tab="mesaj">Mesaj</button>
+                <button class="section-tab" type="button" data-tab="sarki">Şarkı</button>
+                <button class="logout-button" type="button">Çıkış yap</button>
+            </nav>
+
+            <img class="side-menu-logo no-lightbox" src="image.png" alt="Logo" />
+        </aside>
 
         <div class="hero-text">
             <p class="eylem">Seni çok seviyorum :3</p>
-            <h1>Büşra için günlük (˶ᵔᗜᵔ˶)ﾉﾞ</h1>
+            <h1>Günlüğümüze hoşgeldin askim</h1> 
+            <h1>(˶ᵔᗜᵔ˶)ﾉﾞ</h1>
             <p>Bu sayfa bir "içimden geldi" hediyesidir.</p>
-            <img class="hero-logo-secondary" src="logo2.png" alt="">
+            <img class="hero-logo-secondary no-lightbox" src="logo2.png" alt="">
         </div>
     </header>
 
     <main>
-        
-
-        <section class="composer" id="yeni-yazi">
-            <div class="composer-heading">
-                <div>
-                    <p class="section-kicker">Günlüğe ekle</p>
-                    <h2>Yeni bir anı bırak</h2><h2>⸜(｡˃ ᵕ ˂ )⸝♡</h2>
-                </div>
-                <span class="save-note"></span>
-            </div>
-            <form id="entry-form">
-                <div class="form-grid">
-                    <label>
-                        Tarih
-                        <input id="entry-date-input" name="date" type="date" required>
-                    </label>
-                    <label>
-                        Başlık
-                        <input name="title" type="text" placeholder="Bugünün hikayesi" maxlength="90" required>
-                    </label>
-                </div>
-                <label>
-                    İçerik
-                    <textarea name="content" rows="5" placeholder="İçinden geleni yaz" maxlength="1200" required></textarea>
-                </label>
-                <label>
-                    Şarkı <span class="optional-label">İsteğe bağlı · Spotify, YouTube veya başka bir bağlantı</span>
-                    <input name="songLink" type="url" placeholder="https://open.spotify.com/...">
-                </label>
-                <label class="photo-picker">
-                    Fotoğraflar <span>İsteğe bağlı (Ama sen bir şey ekle yine de) · Birden fazla JPG, PNG veya WEBP seçebilirsin</span>
-                    <input id="entry-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
-                </label>
-                
-                <div class="form-footer">
-                    <span id="photo-name"></span>
-                    <div class="form-actions">
-                        <button class="cancel-button" id="cancel-edit" type="button" hidden>İptal</button>
-                        <button class="submit-button" type="submit">Yazıyı yayınla (˶ˆᗜˆ˵) <span aria-hidden="true">→</span></button>
+        <div class="content-panel active" id="panel-gunluk">
+            <section class="composer" id="yeni-yazi">
+                <div class="composer-heading">
+                    <div>
+                        <p class="section-kicker">Günlüğe ekle</p>
+                        <h2>Yeni bir anı bırak</h2><h2>⸜(｡˃ ᵕ ˂ )⸝♡</h2>
                     </div>
+                    <span class="save-note"></span>
                 </div>
-                <p class="form-status" id="form-status" role="status"></p>
-            </form>
-        </section>
+                <form id="entry-form">
+                    <div class="form-grid">
+                        <label>
+                            Tarih
+                            <input id="entry-date-input" name="date" type="date" required>
+                        </label>
+                        <label>
+                            Başlık
+                            <input name="title" type="text" placeholder="Bugünün hikayesi" maxlength="90" required>
+                        </label>
+                    </div>
+                    <label>
+                        İçerik
+                        <textarea name="content" rows="5" placeholder="İçinden geleni yaz" maxlength="1200" required></textarea>
+                    </label>
+                    <label>
+                        Şarkı <span class="optional-label">İsteğe bağlı · Spotify, YouTube veya başka bir bağlantı</span>
+                        <input name="songLink" type="url" placeholder="https://open.spotify.com/...">
+                    </label>
+                    <label class="photo-picker">
+                        Fotoğraflar <span>İsteğe bağlı (Ama sen bir şey ekle yine de) · Birden fazla JPG, PNG veya WEBP seçebilirsin</span>
+                        <input id="entry-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                    </label>
+                    
+                    <div class="form-footer">
+                        <span id="photo-name"></span>
+                        <div class="form-actions">
+                            <button class="cancel-button" id="cancel-edit" type="button" hidden>İptal</button>
+                            <button class="submit-button" type="submit">Yazıyı yayınla (˶ˆᗜˆ˵) <span aria-hidden="true">→</span></button>
+                        </div>
+                    </div>
+                    <p class="form-status" id="form-status" role="status"></p>
+                </form>
+            </section>
 
-        <section class="intro" id="intro">
-            <h2>｡ ₊°༺❤︎༻°₊ ｡</h2>
-            <p>İlham kaynağımın sen olması beni çok mutlu ediyor. Seninleyken her şeyi yapabilirmişim gibi hissediyorum. Hep yanımda olduğunu hissettirdiğin için teşekkür ederim.</p>
-        </section>
-        <div id="saved-entries">
+            <section class="intro" id="intro">
+                <h2>｡ ₊°༺❤︎༻°₊ ｡</h2>
+                <p>İlham kaynağımın sen olması beni çok mutlu ediyor. Seninleyken her şeyi yapabilirmişim gibi hissediyorum. Hep yanımda olduğunu hissettirdiğin için teşekkür ederim.</p>
+            </section>
+            <div id="saved-entries">
         <section class="entry" id="gunluk">
             <div>
                 <span class="entry-date">29 Nisan</span>
@@ -311,103 +324,107 @@
         </section>
 
         </div>
+        </div>
 
-        <section class="album-uploader" id="album-ekle">
-            <div class="composer-heading">
-                <div>
-                    <p class="section-kicker">Albümü büyüt</p>
-                    <h2>Fotoğraf ekle ≽^•⩊•^≼</h2>
+        <div class="content-panel" id="panel-album">
+            <section class="album-uploader" id="album-ekle">
+                <div class="composer-heading">
+                    <div>
+                        <p class="section-kicker">Albümü büyüt</p>
+                        <h2>Fotoğraf ekle ≽^•⩊•^≼</h2>
+                    </div>
+                    <span class="save-note"></span>
                 </div>
-                <span class="save-note"></span>
-            </div>
-            <form id="album-form">
-                <label class="photo-picker">
-                    Fotoğraflar <span>Birden fazla fotoğraf seçebilirsin</span>
-                    <input id="album-photo-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple required>
-                </label>
-                <div class="form-footer">
-                    <span id="album-photo-name"></span>
-                    <button class="submit-button" type="submit">Albüme ekle (˶ˆᗜˆ˵)<span aria-hidden="true">→</span></button>
+                <form id="album-form">
+                    <label class="photo-picker">
+                        Fotoğraflar <span>Birden fazla fotoğraf seçebilirsin</span>
+                        <input id="album-photo-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple required>
+                    </label>
+                    <div class="form-footer">
+                        <span id="album-photo-name"></span>
+                        <button class="submit-button" type="submit">Albüme ekle (˶ˆᗜˆ˵)<span aria-hidden="true">→</span></button>
+                    </div>
+                    <p class="form-status" id="album-status" role="status"></p>
+                </form>
+            </section>
+
+            <section class="gallery" id="fotograflar">
+                <h2>Albüm (˶˃ ᵕ ˂˶) .ᐟ.ᐟ</h2>
+                <div class="gallery-grid">
+                <div class="uploaded-album-photos" id="uploaded-album-photos"></div>
+                <img src="album/1.jpeg">
+                <img src="album/2.jpeg">
+                <img src="album/3.jpeg">            
+                <img src="album/4.jpeg">
+                <img src="album/5.jpeg">
+                <img src="album/6.png">
+                <img src="album/7.jpeg">
+                <img src="album/8.jpeg">
+                <img src="album/9.jpeg">
+                <img src="album/10.png">
+                <img src="album/11.png">
+                <img src="album/12.png">
+                <img src="album/13.png">
+                <img src="album/14.png">
+                <img src="album/15.jpeg">
+                <img src="album/16.jpeg">
+                <img src="album/17.jpeg">
+                <img src="album/18.jpeg">
+                <img src="album/19.jpeg">
+                <img src="album/20.jpeg">
+                <img src="album/21.jpeg">
+                <img src="album/22.jpeg">
+                <img src="album/23.jpeg">
+                <img src="album/24.jpeg">
+                <img src="album/25.jpeg">
+                <img src="album/26.jpeg">
+                <img src="album/27.jpeg">
+                <img src="album/28.jpeg">
+                <img src="album/29.jpeg">
+                <img src="album/30.jpeg">
+                <img src="album/31.jpeg">
+                <img src="album/32.jpeg">
+                <img src="album/33.jpeg">
+                <img src="album/34.jpeg">
+                <img src="album/35.jpeg">
+                <img src="album/36.jpeg">
+                <img src="album/37.jpeg">
+                <img src="album/38.jpeg">
+              </div>
+            </section>
+        </div>
+
+        <div class="content-panel" id="panel-mesaj">
+            <section class="chat-section" id="sohbet">
+                <div class="composer-heading">
+                    <div>
+                        <br>
+                        <br>
+                        <p class="section-kicker">ᕙ(  •̀ ᗜ •́  )ᕗ</p>
+                        <h2>Bana mesaj at !!</h2>
+                    </div>
                 </div>
-                <p class="form-status" id="album-status" role="status"></p>
-            </form>
-        </section>
-
-        <section class="gallery" id="fotograflar">
-            <h2>Albüm (˶˃ ᵕ ˂˶) .ᐟ.ᐟ</h2>
-            <div class="gallery-grid">
-            <div class="uploaded-album-photos" id="uploaded-album-photos"></div>
-            <img src="album/1.jpeg">
-            <img src="album/2.jpeg">
-            <img src="album/3.jpeg">            
-            <img src="album/4.jpeg">
-            <img src="album/5.jpeg">
-            <img src="album/6.png">
-            <img src="album/7.jpeg">
-            <img src="album/8.jpeg">
-            <img src="album/9.jpeg">
-            <img src="album/10.png">
-            <img src="album/11.png">
-            <img src="album/12.png">
-            <img src="album/13.png">
-            <img src="album/14.png">
-            <img src="album/15.jpeg">
-            <img src="album/16.jpeg">
-            <img src="album/17.jpeg">
-            <img src="album/18.jpeg">
-            <img src="album/19.jpeg">
-            <img src="album/20.jpeg">
-            <img src="album/21.jpeg">
-            <img src="album/22.jpeg">
-            <img src="album/23.jpeg">
-            <img src="album/24.jpeg">
-            <img src="album/25.jpeg">
-            <img src="album/26.jpeg">
-            <img src="album/27.jpeg">
-            <img src="album/28.jpeg">
-            <img src="album/29.jpeg">
-            <img src="album/30.jpeg">
-            <img src="album/31.jpeg">
-            <img src="album/32.jpeg">
-            <img src="album/33.jpeg">
-            <img src="album/34.jpeg">
-            <img src="album/35.jpeg">
-            <img src="album/36.jpeg">
-            <img src="album/37.jpeg">
-            <img src="album/38.jpeg">
-          </div>
-        </section>
-
-        <section class="chat-section" id="sohbet">
-            <div class="composer-heading">
-                <div>
-                    <br>
-                    <br>
-                    <p class="section-kicker">ᕙ(  •̀ ᗜ •́  )ᕗ</p>
-                    <h2>Bana mesaj at !!</h2>
+                <div class="chat-messages" id="chat-messages" aria-live="polite">
+                    <p class="chat-empty">Mesajlar yükleniyor...</p>
                 </div>
-            </div>
-            <div class="chat-messages" id="chat-messages" aria-live="polite">
-                <p class="chat-empty">Mesajlar yükleniyor...</p>
-            </div>
-            <form class="chat-form" id="chat-form">
-                <label class="sr-only" for="chat-input">Mesajın</label>
-                <textarea id="chat-input" maxlength="1000" placeholder="Bir şeyler yaz..." required></textarea>
-                <div class="chat-form-footer">
-                    <span class="form-status" id="chat-status" role="status"></span>
-                    <button class="submit-button" type="submit">Gönder <span aria-hidden="true">→</span></button>
-                </div>
-            </form>
-        </section>
+                <form class="chat-form" id="chat-form">
+                    <label class="sr-only" for="chat-input">Mesajın</label>
+                    <textarea id="chat-input" maxlength="1000" placeholder="Bir şeyler yaz..." required></textarea>
+                    <div class="chat-form-footer">
+                        <span class="form-status" id="chat-status" role="status"></span>
+                        <button class="submit-button" type="submit">Gönder <span aria-hidden="true">→</span></button>
+                    </div>
+                </form>
+            </section>
+        </div>
 
-        <br>
-        <br>
-
-        <section class="music" id="sarki">
-            <h2>Şarkı (˶>⩊<˶)</h2>
-            <p>Lego yaparken bunu seninle dinlemek beynimin kimyasını değiştirdi.</p>
-            <a class="link-button" href="https://open.spotify.com/track/5WdMBJD7V5CVBTBdE2at2D?si=BiQSUSLjRgiyWK0pc1TsjA&utm_source=copy-link" target="_blank" rel="noreferrer">Dinle (๑•᎑•๑)</a>
-        </section>
+        <div class="content-panel" id="panel-sarki">
+            <section class="music" id="sarki">
+                <h2>Şarkı (˶>⩊<˶)</h2>
+                <p>Lego yaparken bunu seninle dinlemek beynimin kimyasını değiştirdi.</p>
+                <a class="link-button" href="https://open.spotify.com/track/5WdMBJD7V5CVBTBdE2at2D?si=BiQSUSLjRgiyWK0pc1TsjA&utm_source=copy-link" target="_blank" rel="noreferrer">Dinle (๑•᎑•๑)</a>
+            </section>
+        </div>
     </main>
 
     <footer>
@@ -419,7 +436,7 @@
         <div class="delete-modal-backdrop" data-delete-cancel></div>
         <section class="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
             <span class="delete-dialog-icon" aria-hidden="true">
-                <img src="logo2.png" alt="">
+                <img class="no-lightbox" src="logo2.png" alt="">
             </span>
             <p class="section-kicker">!!!ASKIM DUR!!!</p>
             <h2 id="delete-modal-title">Bunu silmek istediğine emin misin?</h2>
@@ -429,6 +446,15 @@
                 <button class="delete-confirm-button" type="button" data-delete-confirm>Evet, sil</button>
             </div>
         </section>
+    </div>
+
+    <div class="lightbox" id="image-lightbox" aria-hidden="true">
+        <div class="lightbox-inner">
+            <button class="lightbox-close" type="button" aria-label="Kapat">✕</button>
+            <button class="lightbox-nav lightbox-prev" type="button" aria-label="Önceki fotoğraf">‹</button>
+            <img class="lightbox-image" src="" alt="Tam boyutlu fotoğraf" />
+            <button class="lightbox-nav lightbox-next" type="button" aria-label="Sonraki fotoğraf">›</button>
+        </div>
     </div>
 
     <script>
@@ -468,12 +494,23 @@
         const deleteModalMessage = document.querySelector("#delete-modal-message");
         const deleteConfirmButton = deleteModal.querySelector("[data-delete-confirm]");
         const deleteCancelButtons = deleteModal.querySelectorAll("[data-delete-cancel]");
+        const imageLightbox = document.querySelector("#image-lightbox");
+        const lightboxImage = imageLightbox.querySelector(".lightbox-image");
+        const lightboxCloseButton = imageLightbox.querySelector(".lightbox-close");
+        const lightboxPrevButton = imageLightbox.querySelector(".lightbox-prev");
+        const lightboxNextButton = imageLightbox.querySelector(".lightbox-next");
+        const sectionTabs = document.querySelectorAll(".section-tab");
+        const contentPanels = document.querySelectorAll(".content-panel");
         const today = new Date();
         let entriesCache = [];
         let albumPhotosCache = [];
         let entryCommentsCache = [];
         let chatMessagesCache = [];
         let editingEntryId = null;
+        let currentUser = null;
+        let userProfilesCache = new Map();
+        let lightboxPhotos = [];
+        let lightboxIndex = 0;
 
         dateInput.value = today.toISOString().slice(0, 10);
 
@@ -512,19 +549,57 @@
             });
         }
 
+        function getAuthorBadge(authorId) {
+            if (!authorId) {
+                return null;
+            }
+            const isCurrentUser = currentUser?.id === authorId;
+            const currentEmail = currentUser?.email?.toLowerCase();
+            const otherLabel = currentEmail === "yoursweet666@gmail.com"
+                ? "alison"
+                : currentEmail === "beloved@gmail.com"
+                    ? "caroline"
+                    : "askim";
+            const label = isCurrentUser ? "sen" : otherLabel;
+            const badge = createTextElement("span", "author-badge", label);
+            badge.classList.add(isCurrentUser ? "author-self" : "author-other");
+            return badge;
+        }
+
+        function isCurrentUserAuthor(authorId) {
+            return Boolean(authorId && currentUser?.id === authorId);
+        }
+
+        async function ensureCurrentUserProfile() {
+            if (!currentUser) {
+                return;
+            }
+            const displayName = currentUser.user_metadata?.full_name?.trim()
+                || currentUser.email?.split("@")[0]
+                || "Kullanıcı";
+            const { error } = await supabaseClient
+                .from("user_profiles")
+                .upsert({ id: currentUser.id, display_name: displayName });
+            if (error) {
+                throw new Error(`Kullanıcı profili kaydedilemedi: ${error.message}`);
+            }
+        }
+
         async function loadSharedData() {
-            const [{ data: entries, error: entriesError }, { data: photos, error: photosError }, { data: comments, error: commentsError }] = await Promise.all([
-                supabaseClient.from("entries").select("*").order("date", { ascending: false }),
+            const [{ data: entries, error: entriesError }, { data: photos, error: photosError }, { data: comments, error: commentsError }, { data: profiles, error: profilesError }] = await Promise.all([
+                supabaseClient.from("entries").select("*").order("created_at", { ascending: false }),
                 supabaseClient.from("album_photos").select("*").order("created_at", { ascending: false }),
-                supabaseClient.from("entry_comments").select("*").order("created_at", { ascending: true })
+                supabaseClient.from("entry_comments").select("*").order("created_at", { ascending: true }),
+                supabaseClient.from("user_profiles").select("id, display_name")
             ]);
-            if (entriesError || photosError || commentsError) {
-                const dataError = entriesError || photosError || commentsError;
+            if (entriesError || photosError || commentsError || profilesError) {
+                const dataError = entriesError || photosError || commentsError || profilesError;
                 throw new Error(`Supabase tabloları okunamadı: ${dataError.message || dataError}`);
             }
             entriesCache = (entries || []).map((entry) => ({ ...entry, songLink: entry.song_link || "" }));
             albumPhotosCache = photos || [];
             entryCommentsCache = comments || [];
+            userProfilesCache = new Map((profiles || []).map((profile) => [profile.id, profile.display_name]));
         }
 
         async function loadChatMessages() {
@@ -566,7 +641,9 @@
                     chatMessagesCache = chatMessagesCache.filter((savedMessage) => savedMessage.id !== message.id);
                     renderChatMessages();
                 });
+                const authorBadge = getAuthorBadge(message.author_id);
                 article.append(
+                    ...(authorBadge ? [authorBadge] : []),
                     createTextElement("p", "", message.message),
                     createTextElement("time", "", new Intl.DateTimeFormat("tr-TR", {
                         day: "numeric",
@@ -574,11 +651,17 @@
                         hour: "2-digit",
                         minute: "2-digit"
                     }).format(new Date(message.created_at))),
-                    deleteButton
+                    ...(isCurrentUserAuthor(message.author_id) ? [deleteButton] : [])
                 );
                 chatMessages.append(article);
             });
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function scrollChatToLatest() {
+            requestAnimationFrame(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
         }
 
         async function uploadImageToStorage(bucketName, file) {
@@ -625,6 +708,45 @@
             });
         }
 
+        function updateLightboxImage() {
+            const photo = lightboxPhotos[lightboxIndex];
+            if (!photo) {
+                return;
+            }
+            lightboxImage.src = photo.src;
+            lightboxImage.alt = photo.alt || "Tam boyutlu fotoğraf";
+            const hasNavigation = lightboxPhotos.length > 1;
+            lightboxPrevButton.hidden = !hasNavigation;
+            lightboxNextButton.hidden = !hasNavigation;
+        }
+
+        function openImageLightbox(photos, selectedIndex = 0) {
+            lightboxPhotos = photos;
+            lightboxIndex = selectedIndex;
+            updateLightboxImage();
+            imageLightbox.classList.add("open");
+            imageLightbox.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeImageLightbox() {
+            imageLightbox.classList.remove("open");
+            imageLightbox.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+            lightboxImage.src = "";
+            lightboxImage.alt = "Tam boyutlu fotoğraf";
+            lightboxPhotos = [];
+            lightboxIndex = 0;
+        }
+
+        function showLightboxPhoto(offset) {
+            if (lightboxPhotos.length < 2) {
+                return;
+            }
+            lightboxIndex = (lightboxIndex + offset + lightboxPhotos.length) % lightboxPhotos.length;
+            updateLightboxImage();
+        }
+
         function renderAlbumPhotos() {
             uploadedAlbumPhotos.replaceChildren();
             getAlbumPhotos().forEach((photo) => {
@@ -650,7 +772,10 @@
                     renderAlbumPhotos();
                 });
 
-                figure.append(image, removeButton);
+                figure.append(image);
+                if (isCurrentUserAuthor(photo.author_id)) {
+                    figure.append(removeButton);
+                }
                 uploadedAlbumPhotos.append(figure);
             });
         }
@@ -713,7 +838,17 @@
         function sortAllEntries() {
             const sections = [...savedEntries.querySelectorAll(":scope > section.entry")];
             sections
-                .sort((first, second) => getSectionDate(second) - getSectionDate(first))
+                .sort((first, second) => {
+                    const firstIsDynamic = first.classList.contains("dynamic-entry");
+                    const secondIsDynamic = second.classList.contains("dynamic-entry");
+                    if (firstIsDynamic !== secondIsDynamic) {
+                        return firstIsDynamic ? -1 : 1;
+                    }
+                    if (firstIsDynamic) {
+                        return Number(second.dataset.entryCreatedAt || 0) - Number(first.dataset.entryCreatedAt || 0);
+                    }
+                    return getSectionDate(second) - getSectionDate(first);
+                })
                 .forEach((section) => savedEntries.append(section));
         }
 
@@ -752,6 +887,9 @@
                 link.title = entry.title;
                 link.addEventListener("click", () => {
                     document.querySelector(".nav-menu").removeAttribute("open");
+                    document.querySelector(".side-menu")?.classList.remove("is-open");
+                    document.querySelector(".side-menu-backdrop")?.classList.remove("is-visible");
+                    document.querySelector(".menu-toggle")?.setAttribute("aria-expanded", "false");
                 });
                 dateMenu.append(link);
             });
@@ -782,7 +920,9 @@
                     entryCommentsCache = entryCommentsCache.filter((savedComment) => savedComment.id !== comment.id);
                     renderEntries();
                 });
+                const authorBadge = getAuthorBadge(comment.author_id);
                 commentItem.append(
+                    ...(authorBadge ? [authorBadge] : []),
                     createTextElement("p", "", comment.message),
                     createTextElement("time", "", new Intl.DateTimeFormat("tr-TR", {
                         day: "numeric",
@@ -790,7 +930,7 @@
                         hour: "2-digit",
                         minute: "2-digit"
                     }).format(new Date(comment.created_at))),
-                    deleteButton
+                    ...(isCurrentUserAuthor(comment.author_id) ? [deleteButton] : [])
                 );
                 commentsList.append(commentItem);
             });
@@ -821,7 +961,7 @@
                 commentStatus.textContent = "Gönderiliyor...";
                 const { data, error } = await supabaseClient
                     .from("entry_comments")
-                    .insert({ entry_id: entry.id, message })
+                    .insert({ entry_id: entry.id, message, author_id: currentUser?.id || null })
                     .select()
                     .single();
                 if (error) {
@@ -866,20 +1006,24 @@
             addYearToStaticDates();
             const entries = getEntries();
             renderDateMenu(entries);
+            const dynamicEntries = document.createDocumentFragment();
 
             entries.forEach((entry, index) => {
                 const section = document.createElement("section");
                 section.className = "entry dynamic-entry";
                 section.id = `saved-entry-${entry.id}`;
                 section.dataset.entryDate = entry.date;
+                section.dataset.entryCreatedAt = new Date(entry.created_at || 0).getTime();
 
                 const content = document.createElement("div");
                 content.className = "saved-entry-content";
                 if (index === 0) {
                     content.append(createTextElement("p", "saved-label", "Yeni kayıt"));
                 }
+                const entryAuthorBadge = getAuthorBadge(entry.author_id);
                 content.append(
                     createTextElement("span", "entry-date", formatDate(entry.date)),
+                    ...(entryAuthorBadge ? [entryAuthorBadge] : []),
                     createTextElement("h3", "", entry.title),
                     createTextElement("p", "", entry.content)
                 );
@@ -908,13 +1052,14 @@
                     entriesCache = getEntries().filter((savedEntry) => savedEntry.id !== entry.id);
                     renderEntries();
                 });
-                const editButton = createTextElement("button", "edit-button", "Düzenle");
-                editButton.type = "button";
-                editButton.addEventListener("click", () => startEditing(entry));
                 const entryActions = document.createElement("div");
                 entryActions.className = "entry-actions";
-                entryActions.append(editButton, deleteButton);
-                content.append(entryActions);
+                if (isCurrentUserAuthor(entry.author_id)) {
+                    const editButton = createTextElement("button", "edit-button", "Düzenle");
+                    editButton.type = "button";
+                    editButton.addEventListener("click", () => startEditing(entry));
+                    entryActions.append(editButton, deleteButton);
+                }
 
                 const entryPhotos = getEntryPhotos(entry);
                 if (entryPhotos.length) {
@@ -934,12 +1079,118 @@
                     section.append(content, placeholder);
                 }
 
+                if (entryActions.childElementCount) {
+                    section.append(entryActions);
+                }
                 section.append(renderEntryComments(entry));
 
-                savedEntries.append(section);
+                dynamicEntries.append(section);
             });
+            savedEntries.prepend(dynamicEntries);
             sortAllEntries();
         }
+
+        document.addEventListener("click", (event) => {
+            const clickedImage = event.target.closest("img");
+            if (!clickedImage || clickedImage.classList.contains("lightbox-image") || clickedImage.classList.contains("no-lightbox")) {
+                return;
+            }
+            if (!clickedImage.src) {
+                return;
+            }
+            event.preventDefault();
+            const photoGroup = clickedImage.closest(".gallery-grid, .saved-entry-photos, .entry");
+            const groupImages = photoGroup
+                ? [...photoGroup.querySelectorAll("img:not(.no-lightbox)")]
+                : [clickedImage];
+            const photos = groupImages.map((image) => ({
+                src: image.src,
+                alt: image.alt || "Tam boyutlu fotoğraf"
+            }));
+            openImageLightbox(photos, Math.max(groupImages.indexOf(clickedImage), 0));
+        });
+
+        lightboxCloseButton.addEventListener("click", closeImageLightbox);
+        lightboxPrevButton.addEventListener("click", () => showLightboxPhoto(-1));
+        lightboxNextButton.addEventListener("click", () => showLightboxPhoto(1));
+        imageLightbox.addEventListener("click", (event) => {
+            if (event.target === imageLightbox) {
+                closeImageLightbox();
+            }
+        });
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && imageLightbox.classList.contains("open")) {
+                closeImageLightbox();
+            }
+            if (imageLightbox.classList.contains("open") && event.key === "ArrowLeft") {
+                showLightboxPhoto(-1);
+            }
+            if (imageLightbox.classList.contains("open") && event.key === "ArrowRight") {
+                showLightboxPhoto(1);
+            }
+        });
+
+        function activateTab(tabName) {
+            sectionTabs.forEach((tab) => {
+                tab.classList.toggle("active", tab.dataset.tab === tabName);
+            });
+            contentPanels.forEach((panel) => {
+                panel.classList.toggle("active", panel.id === `panel-${tabName}`);
+            });
+            const target = document.querySelector(`#panel-${tabName}`);
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            if (tabName === "mesaj") {
+                scrollChatToLatest();
+            }
+            document.querySelector(".side-menu")?.classList.remove("is-open");
+            document.querySelector(".side-menu-backdrop")?.classList.remove("is-visible");
+            document.querySelector(".menu-toggle")?.setAttribute("aria-expanded", "false");
+        }
+
+        const menuToggle = document.querySelector(".menu-toggle");
+        const sideMenu = document.querySelector(".side-menu");
+        const sideMenuBackdrop = document.querySelector(".side-menu-backdrop");
+        const menuClose = document.querySelector(".menu-close");
+        const accountStatus = document.querySelector("#account-status");
+
+        function updateAccountStatus() {
+            const currentEmail = currentUser?.email?.toLowerCase();
+            accountStatus.textContent = currentEmail === "beloved@gmail.com"
+                ? "alison"
+                : currentEmail === "yoursweet666@gmail.com"
+                    ? "caroline"
+                    : "";
+        }
+
+        function toggleMenu(open) {
+            const isOpen = typeof open === "boolean" ? open : !sideMenu.classList.contains("is-open");
+            sideMenu.classList.toggle("is-open", isOpen);
+            sideMenuBackdrop.classList.toggle("is-visible", isOpen);
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+        }
+
+        menuToggle.addEventListener("click", () => toggleMenu());
+        menuClose.addEventListener("click", () => toggleMenu(false));
+        sideMenuBackdrop.addEventListener("click", () => toggleMenu(false));
+        document.querySelector(".logout-button").addEventListener("click", async () => {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) {
+                loginStatus.textContent = `Çıkış yapılamadı: ${error.message}`;
+                return;
+            }
+            toggleMenu(false);
+            document.body.classList.remove("is-authenticated");
+            currentUser = null;
+            updateAccountStatus();
+            loginForm.reset();
+            loginStatus.textContent = "Çıkış yapıldı.";
+        });
+
+        sectionTabs.forEach((tab) => {
+            tab.addEventListener("click", () => activateTab(tab.dataset.tab));
+        });
 
         photoInput.addEventListener("change", () => {
             const fileCount = photoInput.files.length;
@@ -971,7 +1222,8 @@
                     const publicUrl = await uploadImageToStorage("album-photos", file);
                     return {
                         name: file.name,
-                        src: publicUrl
+                        src: publicUrl,
+                        author_id: currentUser?.id || null
                     };
                 }));
                 const { data, error } = await supabaseClient.from("album_photos").insert(uploadedPhotos).select();
@@ -1001,7 +1253,7 @@
             chatStatus.textContent = "Gönderiliyor...";
             const { data, error } = await supabaseClient
                 .from("chat_messages")
-                .insert({ message })
+                .insert({ message, author_id: currentUser?.id || null })
                 .select()
                 .single();
             if (error) {
@@ -1040,6 +1292,9 @@
                             ...photoUrls
                         ])
                     };
+                    if (!isEditing) {
+                        entry.author_id = currentUser?.id || null;
+                    }
                     const result = editingEntryId
                         ? await supabaseClient.from("entries").update(entry).eq("id", editingEntryId).select().single()
                         : await supabaseClient.from("entries").insert(entry).select().single();
@@ -1119,6 +1374,10 @@
 
         async function initializeApp() {
             try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                currentUser = session?.user || null;
+                updateAccountStatus();
+                await ensureCurrentUserProfile();
                 await loadSharedData();
                 document.body.classList.add("is-authenticated");
                 renderEntries();
@@ -1173,6 +1432,19 @@
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 initializeApp();
+            }
+        });
+
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            currentUser = session?.user || null;
+            updateAccountStatus();
+            if (event === "SIGNED_OUT") {
+                document.body.classList.remove("is-authenticated");
+                return;
+            }
+            if (document.body.classList.contains("is-authenticated")) {
+                renderEntries();
+                renderChatMessages();
             }
         });
     </script>
