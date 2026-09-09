@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Büşra'ya</title>
+    <title>lovers' diary</title>
     <link rel="icon" type="image/png" sizes="512x512" href="logo.png?v=2">
     <link rel="shortcut icon" type="image/png" href="logo.png?v=2">
     <link rel="stylesheet" href="style.css">
@@ -14,7 +14,7 @@
         <form class="login-card" id="login-form">
             <p class="section-kicker">Özel günlük</p>
             <h1>>⩊<</h1>
-            <p>Devam etmek için ortak hesapla giriş yap!!!</p>
+            <p>Devam etmek için hesabınla giriş yap!!!</p>
             <label>
                 E-posta
                 <input id="login-email" type="email" autocomplete="username" required>
@@ -70,9 +70,10 @@
         <div class="content-panel active" id="panel-gunluk">
             <section class="composer" id="yeni-yazi">
                 <div class="composer-heading">
-                    <div>
+                    <div class="title-stack">
                         <p class="section-kicker">Günlüğe ekle</p>
-                        <h2>Yeni bir anı bırak</h2><h2>⸜(｡˃ ᵕ ˂ )⸝♡</h2>
+                        <h2>Yeni bir anı bırak</h2>
+                        <h2 class="title-emoji">⸜(｡˃ ᵕ ˂ )⸝♡</h2>
                     </div>
                     <span class="save-note"></span>
                 </div>
@@ -329,9 +330,10 @@
         <div class="content-panel" id="panel-album">
             <section class="album-uploader" id="album-ekle">
                 <div class="composer-heading">
-                    <div>
+                    <div class="title-stack">
                         <p class="section-kicker">Albümü büyüt</p>
-                        <h2>Fotoğraf ekle ≽^•⩊•^≼</h2>
+                        <h2>Fotoğraf ekle</h2>
+                        <h2 class="title-emoji">≽^•⩊•^≼</h2>
                     </div>
                     <span class="save-note"></span>
                 </div>
@@ -400,7 +402,7 @@
                     <div>
                         <br>
                         <br>
-                        <p class="section-kicker">ᕙ(  •̀ ᗜ •́  )ᕗ</p>
+                        <h2>ᕙ(  •̀ ᗜ •́  )ᕗ</h2>
                         <h2>Bana mesaj at !!</h2>
                     </div>
                 </div>
@@ -420,7 +422,10 @@
 
         <div class="content-panel" id="panel-sarki">
             <section class="music" id="sarki">
-                <h2>Şarkı (˶>⩊<˶)</h2>
+                <div class="title-stack song-title-stack">
+                    <h2>Şarkı</h2>
+                    <h2 class="title-emoji">(˶>⩊<˶)</h2>
+                </div>
                 <p>Lego yaparken bunu seninle dinlemek beynimin kimyasını değiştirdi.</p>
                 <a class="link-button" href="https://open.spotify.com/track/5WdMBJD7V5CVBTBdE2at2D?si=BiQSUSLjRgiyWK0pc1TsjA&utm_source=copy-link" target="_blank" rel="noreferrer">Dinle (๑•᎑•๑)</a>
             </section>
@@ -511,6 +516,8 @@
         let userProfilesCache = new Map();
         let lightboxPhotos = [];
         let lightboxIndex = 0;
+        let sharedContentChannel = null;
+        let chatChannel = null;
 
         dateInput.value = today.toISOString().slice(0, 10);
 
@@ -549,18 +556,34 @@
             });
         }
 
+        function getCurrentUserAlias() {
+            const currentEmail = currentUser?.email?.toLowerCase();
+            if (currentEmail === "beloved@gmail.com") {
+                return "alison";
+            }
+            if (currentEmail === "yoursweet666@gmail.com") {
+                return "caroline";
+            }
+            return "askim";
+        }
+
+        function getOtherUserAlias() {
+            const currentAlias = getCurrentUserAlias();
+            if (currentAlias === "alison") {
+                return "caroline";
+            }
+            if (currentAlias === "caroline") {
+                return "alison";
+            }
+            return "askim";
+        }
+
         function getAuthorBadge(authorId) {
             if (!authorId) {
                 return null;
             }
             const isCurrentUser = currentUser?.id === authorId;
-            const currentEmail = currentUser?.email?.toLowerCase();
-            const otherLabel = currentEmail === "yoursweet666@gmail.com"
-                ? "alison"
-                : currentEmail === "beloved@gmail.com"
-                    ? "caroline"
-                    : "askim";
-            const label = isCurrentUser ? "sen" : otherLabel;
+            const label = isCurrentUser ? "sen" : getOtherUserAlias();
             const badge = createTextElement("span", "author-badge", label);
             badge.classList.add(isCurrentUser ? "author-self" : "author-other");
             return badge;
@@ -1372,18 +1395,52 @@
             await initializeApp();
         });
 
+        function clearSessionCaches() {
+            entriesCache = [];
+            albumPhotosCache = [];
+            entryCommentsCache = [];
+            chatMessagesCache = [];
+            userProfilesCache = new Map();
+            if (chatMessages) {
+                chatMessages.replaceChildren();
+            }
+            if (savedEntries) {
+                savedEntries.replaceChildren();
+            }
+            if (uploadedAlbumPhotos) {
+                uploadedAlbumPhotos.replaceChildren();
+            }
+        }
+
         async function initializeApp() {
             try {
+                if (sharedContentChannel) {
+                    sharedContentChannel.unsubscribe();
+                    sharedContentChannel = null;
+                }
+                if (chatChannel) {
+                    chatChannel.unsubscribe();
+                    chatChannel = null;
+                }
+
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 currentUser = session?.user || null;
                 updateAccountStatus();
+
+                if (!currentUser) {
+                    clearSessionCaches();
+                    document.body.classList.remove("is-authenticated");
+                    return;
+                }
+
                 await ensureCurrentUserProfile();
                 await loadSharedData();
                 document.body.classList.add("is-authenticated");
                 renderEntries();
                 reverseStaticAlbumPhotos();
                 renderAlbumPhotos();
-                supabaseClient
+
+                sharedContentChannel = supabaseClient
                     .channel("shared-content")
                     .on("postgres_changes", {
                         event: "*",
@@ -1410,9 +1467,10 @@
                         renderEntries();
                     })
                     .subscribe();
+
                 try {
                     await loadChatMessages();
-                    supabaseClient
+                    chatChannel = supabaseClient
                         .channel("chat-messages")
                         .on("postgres_changes", {
                             event: "*",
@@ -1435,16 +1493,19 @@
             }
         });
 
-        supabaseClient.auth.onAuthStateChange((event, session) => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
             currentUser = session?.user || null;
             updateAccountStatus();
+
             if (event === "SIGNED_OUT") {
+                clearSessionCaches();
                 document.body.classList.remove("is-authenticated");
+                loginStatus.textContent = "Çıkış yapıldı.";
                 return;
             }
-            if (document.body.classList.contains("is-authenticated")) {
-                renderEntries();
-                renderChatMessages();
+
+            if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+                await initializeApp();
             }
         });
     </script>
