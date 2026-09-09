@@ -522,6 +522,19 @@ main {
   margin: 0 auto;
 }
 
+.saved-entry-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  width: min(100%, 450px);
+  margin: 0 auto;
+}
+
+.saved-entry-photos .saved-entry-photo {
+  width: 100%;
+  height: clamp(180px, 24vw, 280px);
+}
+
 .entry-placeholder {
   display: grid;
   place-items: center;
@@ -680,6 +693,14 @@ footer {
     width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
+  }
+
+  .saved-entry-photos {
+    width: 100%;
+  }
+
+  .saved-entry-photos .saved-entry-photo {
+    height: auto;
   }
 
   .gallery-grid {
