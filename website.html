@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Büşra'ya</title>
+    <link rel="icon" type="image/png" sizes="512x512" href="logo.png?v=2">
+    <link rel="shortcut icon" type="image/png" href="logo.png?v=2">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -45,6 +47,7 @@
             <p class="eylem">Seni çok seviyorum :3</p>
             <h1>Büşra için günlük (˶ᵔᗜᵔ˶)ﾉﾞ</h1>
             <p>Bu sayfa bir "içimden geldi" hediyesidir.</p>
+            <img class="hero-logo-secondary" src="logo2.png" alt="">
         </div>
     </header>
 
@@ -386,6 +389,22 @@
     </footer>
     </div>
 
+    <div class="delete-modal" id="delete-modal" hidden>
+        <div class="delete-modal-backdrop" data-delete-cancel></div>
+        <section class="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+            <span class="delete-dialog-icon" aria-hidden="true">
+                <img src="logo.png" alt="">
+            </span>
+            <p class="section-kicker">!!!ASKIM DUR!!!</p>
+            <h2 id="delete-modal-title">Bunu silmek istediğine emin misin?</h2>
+            <p id="delete-modal-message">Bu işlem geri alınamaz.</p>
+            <div class="delete-dialog-actions">
+                <button class="cancel-button" type="button" data-delete-cancel>Vazgeç</button>
+                <button class="delete-confirm-button" type="button" data-delete-confirm>Evet, sil</button>
+            </div>
+        </section>
+    </div>
+
     <script>
         const SUPABASE_URL = "https://mmamepinywakisfbnhni.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tYW1lcGlueXdha2lzZmJuaG5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTYyNjAsImV4cCI6MjEwNDUzMjI2MH0.yDNkWrLHKTPHIAbys_-nopSDPQvq1_aN1BlMLK8W0Gg";
@@ -415,6 +434,10 @@
         const albumStatus = document.querySelector("#album-status");
         const uploadedAlbumPhotos = document.querySelector("#uploaded-album-photos");
         const galleryGrid = document.querySelector(".gallery-grid");
+        const deleteModal = document.querySelector("#delete-modal");
+        const deleteModalMessage = document.querySelector("#delete-modal-message");
+        const deleteConfirmButton = deleteModal.querySelector("[data-delete-confirm]");
+        const deleteCancelButtons = deleteModal.querySelectorAll("[data-delete-cancel]");
         const today = new Date();
         let entriesCache = [];
         let albumPhotosCache = [];
@@ -428,6 +451,33 @@
 
         function getAlbumPhotos() {
             return albumPhotosCache;
+        }
+
+        function requestDeleteConfirmation(message) {
+            return new Promise((resolve) => {
+                deleteModalMessage.textContent = message;
+                deleteModal.hidden = false;
+                deleteConfirmButton.focus();
+
+                const finish = (confirmed) => {
+                    deleteModal.hidden = true;
+                    deleteConfirmButton.removeEventListener("click", confirm);
+                    deleteCancelButtons.forEach((button) => button.removeEventListener("click", cancel));
+                    document.removeEventListener("keydown", handleKeydown);
+                    resolve(confirmed);
+                };
+                const confirm = () => finish(true);
+                const cancel = () => finish(false);
+                const handleKeydown = (event) => {
+                    if (event.key === "Escape") {
+                        cancel();
+                    }
+                };
+
+                deleteConfirmButton.addEventListener("click", confirm);
+                deleteCancelButtons.forEach((button) => button.addEventListener("click", cancel));
+                document.addEventListener("keydown", handleKeydown);
+            });
         }
 
         async function loadSharedData() {
@@ -498,6 +548,9 @@
                 const removeButton = createTextElement("button", "remove-photo", "Fotoğrafı kaldır");
                 removeButton.type = "button";
                 removeButton.addEventListener("click", async () => {
+                    if (!await requestDeleteConfirmation("Bu fotoğraf albümden kaldırılacak.")) {
+                        return;
+                    }
                     const { error } = await supabaseClient.from("album_photos").delete().eq("id", photo.id);
                     if (error) {
                         albumStatus.textContent = "Fotoğraf kaldırılamadı.";
@@ -676,6 +729,9 @@
                 const deleteButton = createTextElement("button", "delete-button", "Bu yazıyı sil");
                 deleteButton.type = "button";
                 deleteButton.addEventListener("click", async () => {
+                    if (!await requestDeleteConfirmation("Bu günlük ve içindeki bilgiler kalıcı olarak silinecek.")) {
+                        return;
+                    }
                     const { error } = await supabaseClient.from("entries").delete().eq("id", entry.id);
                     if (error) {
                         formStatus.textContent = "Yazı silinemedi.";
