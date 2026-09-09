@@ -40,6 +40,7 @@
             <a href="#yeni-yazi">Yeni Yazı</a>
             <a href="#album-ekle">Yeni Fotoğraf</a>
             <a href="#fotograflar">Albüm</a>
+            <a href="#sohbet">Mesaj</a>
             <a href="#sarki">Şarkı</a>
         </nav>
 
@@ -377,6 +378,31 @@
           </div>
         </section>
 
+        <section class="chat-section" id="sohbet">
+            <div class="composer-heading">
+                <div>
+                    <br>
+                    <br>
+                    <p class="section-kicker">ᕙ(  •̀ ᗜ •́  )ᕗ</p>
+                    <h2>Bana mesaj at !!</h2>
+                </div>
+            </div>
+            <div class="chat-messages" id="chat-messages" aria-live="polite">
+                <p class="chat-empty">Mesajlar yükleniyor...</p>
+            </div>
+            <form class="chat-form" id="chat-form">
+                <label class="sr-only" for="chat-input">Mesajın</label>
+                <textarea id="chat-input" maxlength="1000" placeholder="Bir şeyler yaz..." required></textarea>
+                <div class="chat-form-footer">
+                    <span class="form-status" id="chat-status" role="status"></span>
+                    <button class="submit-button" type="submit">Gönder <span aria-hidden="true">→</span></button>
+                </div>
+            </form>
+        </section>
+
+        <br>
+        <br>
+
         <section class="music" id="sarki">
             <h2>Şarkı (˶>⩊<˶)</h2>
             <p>Lego yaparken bunu seninle dinlemek beynimin kimyasını değiştirdi.</p>
@@ -393,7 +419,7 @@
         <div class="delete-modal-backdrop" data-delete-cancel></div>
         <section class="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
             <span class="delete-dialog-icon" aria-hidden="true">
-                <img src="logo.png" alt="">
+                <img src="logo2.png" alt="">
             </span>
             <p class="section-kicker">!!!ASKIM DUR!!!</p>
             <h2 id="delete-modal-title">Bunu silmek istediğine emin misin?</h2>
@@ -434,6 +460,10 @@
         const albumStatus = document.querySelector("#album-status");
         const uploadedAlbumPhotos = document.querySelector("#uploaded-album-photos");
         const galleryGrid = document.querySelector(".gallery-grid");
+        const chatForm = document.querySelector("#chat-form");
+        const chatInput = document.querySelector("#chat-input");
+        const chatMessages = document.querySelector("#chat-messages");
+        const chatStatus = document.querySelector("#chat-status");
         const deleteModal = document.querySelector("#delete-modal");
         const deleteModalMessage = document.querySelector("#delete-modal-message");
         const deleteConfirmButton = deleteModal.querySelector("[data-delete-confirm]");
@@ -441,6 +471,8 @@
         const today = new Date();
         let entriesCache = [];
         let albumPhotosCache = [];
+        let entryCommentsCache = [];
+        let chatMessagesCache = [];
         let editingEntryId = null;
 
         dateInput.value = today.toISOString().slice(0, 10);
@@ -481,15 +513,72 @@
         }
 
         async function loadSharedData() {
-            const [{ data: entries, error: entriesError }, { data: photos, error: photosError }] = await Promise.all([
+            const [{ data: entries, error: entriesError }, { data: photos, error: photosError }, { data: comments, error: commentsError }] = await Promise.all([
                 supabaseClient.from("entries").select("*").order("date", { ascending: false }),
-                supabaseClient.from("album_photos").select("*").order("created_at", { ascending: false })
+                supabaseClient.from("album_photos").select("*").order("created_at", { ascending: false }),
+                supabaseClient.from("entry_comments").select("*").order("created_at", { ascending: true })
             ]);
-            if (entriesError || photosError) {
-                throw new Error("Supabase tabloları okunamadı. SQL şemasını kurduğundan emin ol.");
+            if (entriesError || photosError || commentsError) {
+                const dataError = entriesError || photosError || commentsError;
+                throw new Error(`Supabase tabloları okunamadı: ${dataError.message || dataError}`);
             }
             entriesCache = (entries || []).map((entry) => ({ ...entry, songLink: entry.song_link || "" }));
             albumPhotosCache = photos || [];
+            entryCommentsCache = comments || [];
+        }
+
+        async function loadChatMessages() {
+            const { data, error } = await supabaseClient
+                .from("chat_messages")
+                .select("*")
+                .order("created_at", { ascending: true });
+            if (error) {
+                throw error;
+            }
+            chatMessagesCache = data || [];
+            renderChatMessages();
+        }
+
+        function renderChatMessages() {
+            chatMessages.replaceChildren();
+            if (!chatMessagesCache.length) {
+                chatMessages.append(createTextElement("p", "chat-empty", "Henüz mesaj yok. İlk mesajı sen bırak."));
+                return;
+            }
+
+            chatMessagesCache.forEach((message) => {
+                const article = document.createElement("article");
+                article.className = "chat-message";
+                const deleteButton = createTextElement("button", "chat-delete-button", "Sil");
+                deleteButton.type = "button";
+                deleteButton.addEventListener("click", async () => {
+                    if (!await requestDeleteConfirmation("Bu mesaj kalıcı olarak silinecek.")) {
+                        return;
+                    }
+                    const { error } = await supabaseClient
+                        .from("chat_messages")
+                        .delete()
+                        .eq("id", message.id);
+                    if (error) {
+                        chatStatus.textContent = formatSupabaseErrorMessage("Mesaj silinemedi.", error);
+                        return;
+                    }
+                    chatMessagesCache = chatMessagesCache.filter((savedMessage) => savedMessage.id !== message.id);
+                    renderChatMessages();
+                });
+                article.append(
+                    createTextElement("p", "", message.message),
+                    createTextElement("time", "", new Intl.DateTimeFormat("tr-TR", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }).format(new Date(message.created_at))),
+                    deleteButton
+                );
+                chatMessages.append(article);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         async function uploadImageToStorage(bucketName, file) {
@@ -497,7 +586,8 @@
             const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
             const { error } = await supabaseClient.storage.from(bucketName).upload(fileName, file, {
                 cacheControl: "3600",
-                upsert: false
+                upsert: false,
+                contentType: file.type
             });
 
             if (error) {
@@ -667,6 +757,84 @@
             });
         }
 
+        function renderEntryComments(entry) {
+            const commentsSection = document.createElement("div");
+            commentsSection.className = "entry-comments";
+            commentsSection.append(createTextElement("h4", "", "Yorumlar"));
+
+            const comments = entryCommentsCache.filter((comment) => comment.entry_id === entry.id);
+            const commentsList = document.createElement("div");
+            commentsList.className = "entry-comments-list";
+            comments.forEach((comment) => {
+                const commentItem = document.createElement("article");
+                commentItem.className = "entry-comment";
+                const deleteButton = createTextElement("button", "chat-delete-button", "Sil");
+                deleteButton.type = "button";
+                deleteButton.addEventListener("click", async () => {
+                    if (!await requestDeleteConfirmation("Bu yorum kalıcı olarak silinecek.")) {
+                        return;
+                    }
+                    const { error } = await supabaseClient.from("entry_comments").delete().eq("id", comment.id);
+                    if (error) {
+                        formStatus.textContent = formatSupabaseErrorMessage("Yorum silinemedi.", error);
+                        return;
+                    }
+                    entryCommentsCache = entryCommentsCache.filter((savedComment) => savedComment.id !== comment.id);
+                    renderEntries();
+                });
+                commentItem.append(
+                    createTextElement("p", "", comment.message),
+                    createTextElement("time", "", new Intl.DateTimeFormat("tr-TR", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }).format(new Date(comment.created_at))),
+                    deleteButton
+                );
+                commentsList.append(commentItem);
+            });
+            if (!comments.length) {
+                commentsList.append(createTextElement("p", "entry-comments-empty", "Henüz yorum yok."));
+            }
+            commentsSection.append(commentsList);
+
+            const commentForm = document.createElement("form");
+            commentForm.className = "entry-comment-form";
+            const commentInput = document.createElement("textarea");
+            commentInput.maxLength = 1000;
+            commentInput.placeholder = "Bu günlüğe bir yorum bırak...";
+            commentInput.required = true;
+            const commentFooter = document.createElement("div");
+            commentFooter.className = "entry-comment-footer";
+            const commentStatus = createTextElement("span", "form-status", "");
+            const submitCommentButton = createTextElement("button", "submit-button", "Yorum yap");
+            submitCommentButton.type = "submit";
+            commentFooter.append(commentStatus, submitCommentButton);
+            commentForm.append(commentInput, commentFooter);
+            commentForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const message = commentInput.value.trim();
+                if (!message) {
+                    return;
+                }
+                commentStatus.textContent = "Gönderiliyor...";
+                const { data, error } = await supabaseClient
+                    .from("entry_comments")
+                    .insert({ entry_id: entry.id, message })
+                    .select()
+                    .single();
+                if (error) {
+                    commentStatus.textContent = formatSupabaseErrorMessage("Yorum gönderilemedi.", error);
+                    return;
+                }
+                entryCommentsCache = [...entryCommentsCache, data];
+                renderEntries();
+            });
+            commentsSection.append(commentForm);
+            return commentsSection;
+        }
+
         function resetForm() {
             form.reset();
             dateInput.value = today.toISOString().slice(0, 10);
@@ -766,6 +934,8 @@
                     section.append(content, placeholder);
                 }
 
+                section.append(renderEntryComments(entry));
+
                 savedEntries.append(section);
             });
             sortAllEntries();
@@ -821,6 +991,30 @@
             }
         });
 
+        chatForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) {
+                return;
+            }
+
+            chatStatus.textContent = "Gönderiliyor...";
+            const { data, error } = await supabaseClient
+                .from("chat_messages")
+                .insert({ message })
+                .select()
+                .single();
+            if (error) {
+                console.error("Chat message insert failed:", error);
+                chatStatus.textContent = formatSupabaseErrorMessage("Mesaj gönderilemedi.", error);
+                return;
+            }
+            chatMessagesCache = [...chatMessagesCache, data];
+            chatInput.value = "";
+            chatStatus.textContent = "";
+            renderChatMessages();
+        });
+
         cancelEditButton.addEventListener("click", resetForm);
 
         form.addEventListener("submit", async (event) => {
@@ -852,7 +1046,7 @@
                     if (result.error) {
                         console.error("Entry save failed:", result.error);
                         formStatus.textContent = formatSupabaseErrorMessage("Yazı kaydedilemedi.", result.error);
-                        return;
+                        return false;
                     }
                     entriesCache = editingEntryId
                         ? currentEntries.map((savedEntry) => savedEntry.id === editingEntryId ? { ...result.data, songLink: result.data.song_link || "" } : savedEntry)
@@ -861,9 +1055,11 @@
                     formStatus.textContent = isEditing ? "Yazı güncellendi." : "Yazın arşive eklendi.";
                     renderEntries();
                     savedEntries.scrollIntoView({ behavior: "smooth", block: "start" });
+                    return true;
                 } catch (error) {
                     console.error("Entry save crashed:", error);
                     formStatus.textContent = `Yazı kaydedilemedi. Tarayıcıda hata oluştu: ${error.message || error}`;
+                    return false;
                 }
             };
 
@@ -872,14 +1068,23 @@
                 return;
             }
 
-            try {
-                const photoUrls = await Promise.all(
-                    photoFiles.map((photoFile) => uploadImageToStorage("entry-photos", photoFile))
-                );
-                await saveEntry(photoUrls);
-            } catch (error) {
-                console.error("Entry photo upload failed:", error);
-                formStatus.textContent = `Fotoğraf yüklenemedi: ${error.message || error}`;
+            const uploadResults = await Promise.allSettled(
+                photoFiles.map((photoFile) => uploadImageToStorage("entry-photos", photoFile))
+            );
+            const photoUrls = uploadResults
+                .filter((result) => result.status === "fulfilled")
+                .map((result) => result.value);
+            const failedUploads = uploadResults.filter((result) => result.status === "rejected");
+
+            failedUploads.forEach((result) => {
+                console.error("Entry photo upload failed:", result.reason);
+            });
+
+            const entrySaved = await saveEntry(photoUrls);
+            if (entrySaved && failedUploads.length) {
+                formStatus.textContent = photoUrls.length
+                    ? `Günlük kaydedildi; ${failedUploads.length} fotoğraf yüklenemedi.`
+                    : "Günlük kaydedildi fakat fotoğraflar yüklenemedi.";
             }
         });
 
@@ -919,6 +1124,47 @@
                 renderEntries();
                 reverseStaticAlbumPhotos();
                 renderAlbumPhotos();
+                supabaseClient
+                    .channel("shared-content")
+                    .on("postgres_changes", {
+                        event: "*",
+                        schema: "public",
+                        table: "entries"
+                    }, async () => {
+                        await loadSharedData();
+                        renderEntries();
+                    })
+                    .on("postgres_changes", {
+                        event: "*",
+                        schema: "public",
+                        table: "album_photos"
+                    }, async () => {
+                        await loadSharedData();
+                        renderAlbumPhotos();
+                    })
+                    .on("postgres_changes", {
+                        event: "*",
+                        schema: "public",
+                        table: "entry_comments"
+                    }, async () => {
+                        await loadSharedData();
+                        renderEntries();
+                    })
+                    .subscribe();
+                try {
+                    await loadChatMessages();
+                    supabaseClient
+                        .channel("chat-messages")
+                        .on("postgres_changes", {
+                            event: "*",
+                            schema: "public",
+                            table: "chat_messages"
+                        }, loadChatMessages)
+                        .subscribe();
+                } catch (error) {
+                    console.error("Chat could not be loaded:", error);
+                    chatStatus.textContent = "Sohbet şu an yüklenemedi. Supabase SQL şemasını çalıştır.";
+                }
             } catch (error) {
                 loginStatus.textContent = `Giriş oldu fakat günlük arşivi yüklenemedi: ${error.message}`;
             }

@@ -104,7 +104,7 @@ img {
 }
 
 .hero {
-  background: linear-gradient(135deg, #ffcadb, #ffdfe7 40%, #fffafc);
+  background: linear-gradient(180deg, #ffd6e3, #ffdfe7 40%, #fffafc);
   min-height: auto;
   display: flex;
   flex-direction: column;
@@ -556,6 +556,74 @@ main {
   font-size: 3rem;
 }
 
+.entry-comments {
+  grid-column: 1 / -1;
+  width: min(100%, 700px);
+  margin: 4px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid #f0ccd9;
+}
+
+.entry-comments h4 {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.entry-comments-list {
+  display: grid;
+  gap: 8px;
+}
+
+.entry-comment {
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: #fff8fb;
+}
+
+.entry-comment p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.entry-comment time {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.entry-comments-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.entry-comment-form {
+  margin-top: 10px;
+}
+
+.entry-comment-form textarea {
+  width: 100%;
+  min-height: 68px;
+  resize: vertical;
+  border: 1px solid #f0ccd9;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: #fff;
+  font: inherit;
+  outline: none;
+}
+
+.entry-comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 .delete-button {
   margin-top: 18px;
   margin-top: 0;
@@ -635,6 +703,102 @@ main {
   box-shadow: 0 16px 25px rgba(0, 0, 0, 0.12);
 }
 
+.chat-section {
+  width: min(100%, 680px);
+  margin: 0 auto;
+}
+
+.chat-messages {
+  display: grid;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #f0ccd9;
+  border-radius: 18px;
+  background: rgba(255, 248, 251, 0.72);
+}
+
+.chat-message {
+  width: fit-content;
+  max-width: min(100%, 520px);
+  padding: 10px 14px;
+  border-radius: 14px 14px 14px 4px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(183, 77, 116, 0.08);
+}
+
+.chat-message p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.chat-message time {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.chat-delete-button {
+  margin-top: 5px;
+  padding: 0;
+  border: 0;
+  color: #b33f65;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.chat-delete-button:hover {
+  text-decoration: underline;
+}
+
+.chat-empty {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.chat-form {
+  margin-top: 12px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.chat-form textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid #f0ccd9;
+  border-radius: 12px;
+  padding: 13px 14px;
+  color: var(--text);
+  background: #fff8fb;
+  font: inherit;
+  outline: none;
+}
+
+.chat-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
 .music {
   text-align: center;
 }
@@ -692,17 +856,16 @@ footer {
 
 .delete-dialog-icon {
   display: grid;
-  width: 84px;
-  height: 84px;
-  margin: 0 auto 14px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 10px;
   place-items: center;
-  transform: translateY(-40px);
 }
 
 .delete-dialog-icon img {
-  width: 200%;
-  max-width: none;
-  height: 200%;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 

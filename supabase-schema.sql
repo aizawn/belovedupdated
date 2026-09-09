@@ -19,8 +19,23 @@ create table if not exists public.album_photos (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.chat_messages (
+  id uuid primary key default gen_random_uuid(),
+  message text not null check (char_length(message) between 1 and 1000),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.entry_comments (
+  id uuid primary key default gen_random_uuid(),
+  entry_id uuid not null references public.entries(id) on delete cascade,
+  message text not null check (char_length(message) between 1 and 1000),
+  created_at timestamptz not null default now()
+);
+
 alter table public.entries enable row level security;
 alter table public.album_photos enable row level security;
+alter table public.chat_messages enable row level security;
+alter table public.entry_comments enable row level security;
 
 drop policy if exists "authenticated users can read entries" on public.entries;
 drop policy if exists "authenticated users can add entries" on public.entries;
@@ -29,6 +44,12 @@ drop policy if exists "authenticated users can delete entries" on public.entries
 drop policy if exists "authenticated users can read album photos" on public.album_photos;
 drop policy if exists "authenticated users can add album photos" on public.album_photos;
 drop policy if exists "authenticated users can delete album photos" on public.album_photos;
+drop policy if exists "authenticated users can read chat messages" on public.chat_messages;
+drop policy if exists "authenticated users can add chat messages" on public.chat_messages;
+drop policy if exists "authenticated users can delete chat messages" on public.chat_messages;
+drop policy if exists "authenticated users can read entry comments" on public.entry_comments;
+drop policy if exists "authenticated users can add entry comments" on public.entry_comments;
+drop policy if exists "authenticated users can delete entry comments" on public.entry_comments;
 
 create policy "authenticated users can read entries"
   on public.entries for select to authenticated using (true);
@@ -45,6 +66,48 @@ create policy "authenticated users can add album photos"
   on public.album_photos for insert to authenticated with check (true);
 create policy "authenticated users can delete album photos"
   on public.album_photos for delete to authenticated using (true);
+
+create policy "authenticated users can read chat messages"
+  on public.chat_messages for select to authenticated using (true);
+create policy "authenticated users can add chat messages"
+  on public.chat_messages for insert to authenticated with check (true);
+create policy "authenticated users can delete chat messages"
+  on public.chat_messages for delete to authenticated using (true);
+
+create policy "authenticated users can read entry comments"
+  on public.entry_comments for select to authenticated using (true);
+create policy "authenticated users can add entry comments"
+  on public.entry_comments for insert to authenticated with check (true);
+create policy "authenticated users can delete entry comments"
+  on public.entry_comments for delete to authenticated using (true);
+
+do $$
+begin
+  alter publication supabase_realtime add table public.chat_messages;
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.entries;
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.album_photos;
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.entry_comments;
+exception
+  when duplicate_object then null;
+end $$;
 
 insert into storage.buckets (id, name, public)
 values
