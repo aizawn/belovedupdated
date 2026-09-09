@@ -55,7 +55,7 @@
             <div class="composer-heading">
                 <div>
                     <p class="section-kicker">Günlüğe ekle</p>
-                    <h2>Yeni bir anı bırak ⸜(｡˃ ᵕ ˂ )⸝♡</h2>
+                    <h2>Yeni bir anı bırak</h2><h2>⸜(｡˃ ᵕ ˂ )⸝♡</h2>
                 </div>
                 <span class="save-note"></span>
             </div>
@@ -142,7 +142,7 @@
             <div>
                 <span class="entry-date">16 Mayıs</span>
                 <h3>THE Konser.</h3>
-                <p>Model konseri olması ne kadar ironik olsa da benim için core memory olarak kalmış bir gün. İkinci dateimizdi ve konser pek de umrumda değildi. Sahne ışıklarının yüzüne vuruşunu izlemek çok güzeldi. O an gerçekten çok güzel olduğunu düşümüştüm. Pek başka bir şey de düşünmemiştim aslında o gün.</p>
+                <p>Model konseri olması ne kadar ironik olsa da benim için core memory olarak kalmış bir gün. İkinci dateimizdi ve konser pek de umrumda değildi. Sahne ışıklarının yüzüne vuruşunu izlemek çok güzeldi. O an gerçekten çok güzel olduğunu düşünmüştüm. Pek başka bir şey de düşünmemiştim aslında o gün.</p>
             </div>
             <img src="photos/foto17.jpeg">
             <img src="photos/foto9.jpeg">
@@ -442,6 +442,22 @@
             albumPhotosCache = photos || [];
         }
 
+        async function uploadImageToStorage(bucketName, file) {
+            const fileExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+            const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+            const { error } = await supabaseClient.storage.from(bucketName).upload(fileName, file, {
+                cacheControl: "3600",
+                upsert: false
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            const { data } = supabaseClient.storage.from(bucketName).getPublicUrl(fileName);
+            return data.publicUrl;
+        }
+
         function readFileAsDataUrl(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -683,23 +699,40 @@
                 : "Henüz fotoğraf seçilmedi";
         });
 
+        function formatSupabaseErrorMessage(label, error) {
+            const baseMessage = error?.message ? ` Hata: ${error.message}` : "";
+            const isSchemaIssue = /column|does not exist|relation .* does not exist|permission denied|row-level security/i.test(error?.message || "");
+            return isSchemaIssue
+                ? `${label} Veritabanı yapısı eski olabilir. Supabase SQL editöründe tablo şemasını yeniden çalıştır.` + baseMessage
+                : `${label}${baseMessage}`;
+        }
+
         albumForm.addEventListener("submit", async (event) => {
             event.preventDefault();
             const files = [...albumPhotoInput.files];
-            const newPhotos = await Promise.all(files.map(async (file) => ({
-                name: file.name,
-                src: await readFileAsDataUrl(file)
-            })));
-            const { data, error } = await supabaseClient.from("album_photos").insert(newPhotos).select();
-            if (error) {
-                albumStatus.textContent = "Fotoğraflar eklenemedi. Supabase ayarlarını kontrol et.";
-                return;
+            try {
+                const uploadedPhotos = await Promise.all(files.map(async (file) => {
+                    const publicUrl = await uploadImageToStorage("album-photos", file);
+                    return {
+                        name: file.name,
+                        src: publicUrl
+                    };
+                }));
+                const { data, error } = await supabaseClient.from("album_photos").insert(uploadedPhotos).select();
+                if (error) {
+                    console.error("Album photo insert failed:", error);
+                    albumStatus.textContent = formatSupabaseErrorMessage("Fotoğraflar eklenemedi.", error);
+                    return;
+                }
+                albumPhotosCache = [...(data || []), ...getAlbumPhotos()];
+                albumForm.reset();
+                albumPhotoName.textContent = "Henüz fotoğraf seçilmedi";
+                albumStatus.textContent = `${uploadedPhotos.length} fotoğraf albüme eklendi.`;
+                renderAlbumPhotos();
+            } catch (error) {
+                console.error("Album upload failed:", error);
+                albumStatus.textContent = `Fotoğraflar yüklenemedi: ${error.message || error}`;
             }
-            albumPhotosCache = [...(data || []), ...getAlbumPhotos()];
-            albumForm.reset();
-            albumPhotoName.textContent = "Henüz fotoğraf seçilmedi";
-            albumStatus.textContent = `${newPhotos.length} fotoğraf albüme eklendi.`;
-            renderAlbumPhotos();
         });
 
         cancelEditButton.addEventListener("click", resetForm);
@@ -709,30 +742,40 @@
             const formData = new FormData(form);
             const photoFile = photoInput.files[0];
             const isEditing = editingEntryId !== null;
-            const saveEntry = async (photo) => {
-                const currentEntries = getEntries();
-                const oldEntry = currentEntries.find((entry) => entry.id === editingEntryId);
-                const entry = {
-                    date: formData.get("date"),
-                    title: formData.get("title").trim(),
-                    content: formData.get("content").trim(),
-                    song_link: formData.get("songLink").trim(),
-                    photo: photo || oldEntry?.photo || ""
-                };
-                const result = editingEntryId
-                    ? await supabaseClient.from("entries").update(entry).eq("id", editingEntryId).select().single()
-                    : await supabaseClient.from("entries").insert(entry).select().single();
-                if (result.error) {
-                    formStatus.textContent = "Yazı kaydedilemedi. Supabase ayarlarını kontrol et.";
-                    return;
+            const saveEntry = async (photoUrl) => {
+                try {
+                    const currentEntries = getEntries();
+                    const oldEntry = currentEntries.find((entry) => entry.id === editingEntryId);
+                    const title = String(formData.get("title") || "").trim();
+                    const content = String(formData.get("content") || "").trim();
+                    const songLinkRaw = formData.get("songLink");
+                    const songLink = typeof songLinkRaw === "string" ? songLinkRaw.trim() : "";
+                    const entry = {
+                        date: String(formData.get("date") || ""),
+                        title,
+                        content,
+                        song_link: songLink,
+                        photo: photoUrl || oldEntry?.photo || ""
+                    };
+                    const result = editingEntryId
+                        ? await supabaseClient.from("entries").update(entry).eq("id", editingEntryId).select().single()
+                        : await supabaseClient.from("entries").insert(entry).select().single();
+                    if (result.error) {
+                        console.error("Entry save failed:", result.error);
+                        formStatus.textContent = formatSupabaseErrorMessage("Yazı kaydedilemedi.", result.error);
+                        return;
+                    }
+                    entriesCache = editingEntryId
+                        ? currentEntries.map((savedEntry) => savedEntry.id === editingEntryId ? { ...result.data, songLink: result.data.song_link || "" } : savedEntry)
+                        : [{ ...result.data, songLink: result.data.song_link || "" }, ...currentEntries];
+                    resetForm();
+                    formStatus.textContent = isEditing ? "Yazı güncellendi." : "Yazın arşive eklendi.";
+                    renderEntries();
+                    savedEntries.scrollIntoView({ behavior: "smooth", block: "start" });
+                } catch (error) {
+                    console.error("Entry save crashed:", error);
+                    formStatus.textContent = `Yazı kaydedilemedi. Tarayıcıda hata oluştu: ${error.message || error}`;
                 }
-                entriesCache = editingEntryId
-                    ? currentEntries.map((savedEntry) => savedEntry.id === editingEntryId ? { ...result.data, songLink: result.data.song_link || "" } : savedEntry)
-                    : [{ ...result.data, songLink: result.data.song_link || "" }, ...currentEntries];
-                resetForm();
-                formStatus.textContent = isEditing ? "Yazı güncellendi." : "Yazın arşive eklendi.";
-                renderEntries();
-                savedEntries.scrollIntoView({ behavior: "smooth", block: "start" });
             };
 
             if (!photoFile) {
@@ -740,17 +783,30 @@
                 return;
             }
 
-            const reader = new FileReader();
-            reader.addEventListener("load", () => saveEntry(reader.result));
-            reader.readAsDataURL(photoFile);
+            try {
+                const photoUrl = await uploadImageToStorage("entry-photos", photoFile);
+                await saveEntry(photoUrl);
+            } catch (error) {
+                console.error("Entry photo upload failed:", error);
+                formStatus.textContent = `Fotoğraf yüklenemedi: ${error.message || error}`;
+            }
         });
 
         loginForm.addEventListener("submit", async (event) => {
             event.preventDefault();
+            const email = document.querySelector("#login-email").value.trim();
+            const password = document.querySelector("#login-password").value;
+
             loginStatus.textContent = "Giriş yapılıyor...";
+
+            const { data: { session: currentSession } } = await supabaseClient.auth.getSession();
+            if (currentSession && currentSession.user?.email && currentSession.user.email !== email) {
+                await supabaseClient.auth.signOut();
+            }
+
             const { error } = await supabaseClient.auth.signInWithPassword({
-                email: document.querySelector("#login-email").value.trim(),
-                password: document.querySelector("#login-password").value
+                email,
+                password
             });
             if (error) {
                 if (error.code === "email_not_confirmed") {

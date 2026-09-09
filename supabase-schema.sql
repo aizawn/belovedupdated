@@ -8,6 +8,10 @@ create table if not exists public.entries (
   created_at timestamptz not null default now()
 );
 
+alter table public.entries
+  add column if not exists song_link text default '',
+  add column if not exists photo text default '';
+
 create table if not exists public.album_photos (
   id uuid primary key default gen_random_uuid(),
   name text not null,
